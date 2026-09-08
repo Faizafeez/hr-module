@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Company HR Module</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #1d4ed8;
+        }
+
+        .subtitle {
+            color: #64748b;
+        }
+
+        form {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    margin-top: 24px;
+       }
+
+       input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    margin: 6px 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+       }
+
+        button {
+    background: #1d4ed8;
+    color: white;
+    border: 0;
+    border-radius: 4px;
+    padding: 12px 18px;
+    margin-top: 10px;
+    cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 24px;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #1d4ed8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Company HR Module</h1>
+        <p class="subtitle">Employee Directory</p>
+
+        <table>
+            <tr>
+                <th>Employee Code</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Action</th>
+            </tr>
+
+            {% for employee in employees %}
+            <tr>
+                <td>{{ employee.employee_code }}</td>
+                <td>{{ employee.full_name }}</td>
+                <td>{{ employee.email }}</td>
+                <td>{{ employee.department }}</td>
+                <td>
+                    <a href="/employees/{{ employee.employee_code }}">View profile</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
+
+<p class="subtitle">Employee Directory</p>
+
+<form action="/employees/form" method="post">
+    <h2>Add Employee</h2>
+
+    <input name="employee_code" placeholder="Employee code, e.g. EMP-002" required>
+    <input name="full_name" placeholder="Full name" required>
+    <input name="email" type="email" placeholder="Email address" required>
+    <input name="department" placeholder="Department" required>
+
+    <button type="submit">Add Employee</button>
+</form>

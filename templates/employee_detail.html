@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ employee.full_name }} | HR Module</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #dbe3f0;
+            max-width: 650px;
+            margin: auto;
+            padding: 32px;
+        }
+
+        h1 {
+            color: #1d4ed8;
+        }
+
+        dt {
+            font-weight: bold;
+            margin-top: 18px;
+        }
+
+        dd {
+            margin-left: 0;
+            margin-top: 5px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 28px;
+            color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>{{ employee.full_name }}</h1>
+
+        <dl>
+            <dt>Employee Code</dt>
+            <dd>{{ employee.employee_code }}</dd>
+
+            <dt>Email</dt>
+            <dd>{{ employee.email }}</dd>
+
+            <dt>Department</dt>
+            <dd>{{ employee.department }}</dd>
+        </dl>
+
+        <a href="/">← Back to Employee Directory</a>
+    </div>
+</body>
+</html>
