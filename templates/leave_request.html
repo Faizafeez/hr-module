@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Leave Request | HR Module</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        .card {
+            background: white;
+            max-width: 650px;
+            margin: auto;
+            padding: 32px;
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #1d4ed8;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 7px 0 16px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+
+        button {
+            background: #1d4ed8;
+            color: white;
+            border: 0;
+            padding: 12px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Submit Leave Request</h1>
+
+        {% if success %}
+        <p class="success">Your leave request was submitted successfully.</p>
+        {% endif %}
+
+        <form action="/leave-requests" method="post">
+            <label>Employee Code</label>
+            <input name="employee_code" placeholder="EMP-001" required>
+
+            <label>Leave Type</label>
+            <select name="leave_type" required>
+                <option value="Annual Leave">Annual Leave</option>
+                <option value="Sick Leave">Sick Leave</option>
+                <option value="Unpaid Leave">Unpaid Leave</option>
+            </select>
+
+            <label>Start Date</label>
+            <input name="start_date" type="date" required>
+
+            <label>End Date</label>
+            <input name="end_date" type="date" required>
+
+            <label>Reason</label>
+            <textarea name="reason" rows="4" required></textarea>
+
+            <button type="submit">Submit Request</button>
+        </form>
+
+        <p><a href="/">Back to Employee Directory</a></p>
+    </div>
+</body>
+</html>

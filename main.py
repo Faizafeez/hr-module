@@ -28,6 +28,16 @@ class EmployeeDatabase(Base):
     email = Column(String, unique=True, nullable=False)
     department = Column(String, nullable=False)
 
+class LeaveRequestDatabase(Base):
+    __tablename__ = "leave_requests"
+
+    id = Column(Integer, primary_key=True)
+    employee_code = Column(String, nullable=False)
+    leave_type = Column(String, nullable=False)
+    start_date = Column(String, nullable=False)
+    end_date = Column(String, nullable=False)
+    reason = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="Pending")
 
 Base.metadata.create_all(bind=engine)
 
@@ -173,4 +183,104 @@ def employee_profile(employee_code: str, request: Request):
         request=request,
         name="employee_detail.html",
         context={"employee": employee}
+    )
+
+@app.get("/leave-request", response_class=HTMLResponse)
+def leave_request_page(request: Request):
+    success = request.query_params.get("success") == "1"
+
+    return templates.TemplateResponse(
+        request=request,
+        name="leave_request.html",
+        context={"success": success}
+    )
+
+
+@app.post("/leave-requests")
+def submit_leave_request(
+    employee_code: str = Form(),
+    leave_type: str = Form(),
+    start_date: str = Form(),
+    end_date: str = Form(),
+    reason: str = Form()
+):
+    database = SessionLocal()
+
+    employee = database.query(EmployeeDatabase).filter(
+        EmployeeDatabase.employee_code == employee_code
+    ).first()
+
+    if not employee:
+        database.close()
+        raise HTTPException(
+            status_code=404,
+            detail="Employee code was not found."
+        )
+
+    new_request = LeaveRequestDatabase(
+        employee_code=employee_code,
+        leave_type=leave_type,
+        start_date=start_date,
+        end_date=end_date,
+        reason=reason,
+        status="Pending"
+    )
+
+    database.add(new_request)
+    database.commit()
+    database.close()
+
+    return RedirectResponse(
+        url="/leave-request?success=1",
+        status_code=303
+    )
+
+@app.get("/leave-requests", response_class=HTMLResponse)
+def list_leave_requests(request: Request):
+    database = SessionLocal()
+
+    leave_requests = database.query(LeaveRequestDatabase).order_by(
+        LeaveRequestDatabase.id.desc()
+    ).all()
+
+    database.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="leave_requests.html",
+        context={"leave_requests": leave_requests}
+    )
+
+
+@app.post("/leave-requests/{request_id}/decision")
+def decide_leave_request(
+    request_id: int,
+    status: str = Form()
+):
+    if status not in ["Approved", "Rejected"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid leave-request decision."
+        )
+
+    database = SessionLocal()
+
+    leave_request = database.query(LeaveRequestDatabase).filter(
+        LeaveRequestDatabase.id == request_id
+    ).first()
+
+    if not leave_request:
+        database.close()
+        raise HTTPException(
+            status_code=404,
+            detail="Leave request was not found."
+        )
+
+    leave_request.status = status
+    database.commit()
+    database.close()
+
+    return RedirectResponse(
+        url="/leave-requests",
+        status_code=303
     )

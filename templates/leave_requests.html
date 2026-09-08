@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leave Requests | HR Module</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #1d4ed8;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        button {
+            border: 0;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            margin-right: 6px;
+            padding: 8px 10px;
+        }
+
+        .approve {
+            background: #15803d;
+        }
+
+        .reject {
+            background: #b91c1c;
+        }
+
+        .pending {
+            color: #a16207;
+            font-weight: bold;
+        }
+
+        .approved {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .rejected {
+            color: #b91c1c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Leave Requests</h1>
+
+        <table>
+            <tr>
+                <th>Employee</th>
+                <th>Leave Type</th>
+                <th>Dates</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+            {% for leave_request in leave_requests %}
+            <tr>
+                <td>{{ leave_request.employee_code }}</td>
+                <td>{{ leave_request.leave_type }}</td>
+                <td>{{ leave_request.start_date }} to {{ leave_request.end_date }}</td>
+                <td>{{ leave_request.reason }}</td>
+                <td class="{{ leave_request.status|lower }}">
+                    {{ leave_request.status }}
+                </td>
+                <td>
+                    {% if leave_request.status == "Pending" %}
+                    <form action="/leave-requests/{{ leave_request.id }}/decision" method="post">
+                        <button class="approve" name="status" value="Approved">
+                            Approve
+                        </button>
+                        <button class="reject" name="status" value="Rejected">
+                            Reject
+                        </button>
+                    </form>
+                    {% else %}
+                    Decision recorded
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <p><a href="/">Back to Employee Directory</a></p>
+    </div>
+</body>
+</html>
