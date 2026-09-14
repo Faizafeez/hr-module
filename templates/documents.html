@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Documents | HR Module</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        form, table {
+            background: white;
+            padding: 24px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin: 6px 0 14px;
+        }
+
+        button {
+            background: #1d4ed8;
+            color: white;
+            border: 0;
+            border-radius: 4px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            box-sizing: border-box;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        .urgent {
+            color: #b91c1c;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #a16207;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Employee Documents</h1>
+        <p>Add a document and monitor its expiry date.</p>
+
+        <form action="/documents" method="post">
+            <label>Employee Code</label>
+            <input name="employee_code" placeholder="EMP-001" required>
+
+            <label>Document Type</label>
+            <select name="document_type" required>
+                <option value="Passport">Passport</option>
+                <option value="Emirates ID">Emirates ID</option>
+                <option value="Residence Visa">Residence Visa</option>
+                <option value="Work Permit">Work Permit</option>
+            </select>
+
+            <label>Document Number</label>
+            <input name="document_number" placeholder="Use a fake number while learning" required>
+
+            <label>Expiry Date</label>
+            <input name="expiry_date" type="date" required>
+
+            <button type="submit">Save Document</button>
+        </form>
+
+        <table>
+            <tr>
+                <th>Employee</th>
+                <th>Document Type</th>
+                <th>Document Number</th>
+                <th>Expiry Date</th>
+                <th>Expiry Status</th>
+            </tr>
+
+            {% for document in documents %}
+            <tr>
+                <td>{{ document.employee_code }}</td>
+                <td>{{ document.document_type }}</td>
+                <td>{{ document.document_number }}</td>
+                <td>{{ document.expiry_date }}</td>
+                <td>
+                    {% if document.days_remaining < 0 %}
+                    <span class="urgent">Expired</span>
+                    {% elif document.days_remaining <= 30 %}
+                    <span class="urgent">Expires in {{ document.days_remaining }} days</span>
+                    {% elif document.days_remaining <= 90 %}
+                    <span class="warning">Expires in {{ document.days_remaining }} days</span>
+                    {% else %}
+                    Valid for {{ document.days_remaining }} days
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <p><a href="/">Back to Employee Directory</a></p>
+    </div>
+</body>
+</html>

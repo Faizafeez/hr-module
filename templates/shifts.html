@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Work Shifts | HR Module</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #1d4ed8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Work Shifts</h1>
+        <p>Late-arrival grace: 5 minutes, up to 3 times per employee per month.</p>
+
+        <table>
+            <tr>
+                <th>Shift</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Overnight?</th>
+                <th>Grace Rule</th>
+            </tr>
+
+            {% for shift in shifts %}
+            <tr>
+                <td>{{ shift.name }}</td>
+                <td>{{ shift.start_time }}</td>
+                <td>{{ shift.end_time }}</td>
+                <td>
+                    {% if shift.crosses_midnight %}
+                    Yes
+                    {% else %}
+                    No
+                    {% endif %}
+                </td>
+                <td>
+                    {{ shift.grace_minutes }} minutes,
+                    {{ shift.monthly_grace_limit }} times monthly
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <p><a href="/">Back to Employee Directory</a></p>
+    </div>
+</body>
+</html>

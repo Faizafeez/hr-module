@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shift Assignments | HR Module</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        form, table {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 16px;
+        }
+
+        button {
+            background: #1d4ed8;
+            color: white;
+            border: 0;
+            border-radius: 4px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            box-sizing: border-box;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #1d4ed8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Employee Shift Assignments</h1>
+
+        <form action="/shift-assignments" method="post">
+            <label>Employee</label>
+            <select name="employee_code" required>
+                {% for employee in employees %}
+                <option value="{{ employee.employee_code }}">
+                    {{ employee.employee_code }} - {{ employee.full_name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <label>Assigned Shift</label>
+            <select name="shift_id" required>
+                {% for shift in shifts %}
+                <option value="{{ shift.id }}">{{ shift.name }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Save Shift Assignment</button>
+        </form>
+
+        <table>
+            <tr>
+                <th>Employee</th>
+                <th>Current Shift</th>
+            </tr>
+
+            {% for employee in employees %}
+            <tr>
+                <td>{{ employee.employee_code }} - {{ employee.full_name }}</td>
+                <td>{{ assigned_shifts.get(employee.employee_code, "Not assigned") }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <p><a href="/">Back to Employee Directory</a></p>
+    </div>
+</body>
+</html>
