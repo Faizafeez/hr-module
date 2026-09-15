@@ -1,10 +1,12 @@
-from fastapi import FastAPI, HTTPException, Request, Form
+from fastapi import FastAPI, HTTPException, Request, Form, File, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, Date, Time, Boolean, ForeignKey, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from datetime import date, time, datetime
+from io import BytesIO
+import pandas as pd
 
 app = FastAPI(title="My Company HR Module")
 templates = Jinja2Templates(directory="templates")
@@ -533,3 +535,142 @@ def add_attendance(
     database.close()
 
     return RedirectResponse(url="/attendance", status_code=303)
+
+@app.get("/employee-import", response_class=HTMLResponse)
+def employee_import_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="employee_import.html",
+        context={"result": None}
+    )
+
+
+@app.post("/employee-import", response_class=HTMLResponse)
+async def import_employees(
+    request: Request,
+    office_file: UploadFile = File(...),
+    factory_day_file: UploadFile = File(...),
+    factory_night_file: UploadFile = File(...)
+):
+    reports = [
+        ("Office Day Shift", office_file),
+        ("Factory Day Shift", factory_day_file),
+        ("Factory Night Shift", factory_night_file)
+    ]
+
+    employees_to_import = []
+    seen_codes = set()
+
+    for shift_name, file in reports:
+        if not file.filename.lower().endswith(".xlsx"):
+            raise HTTPException(
+                status_code=400,
+                detail="Please upload Excel .xlsx files only."
+            )
+
+        report_data = await file.read()
+        report = pd.read_excel(BytesIO(report_data), skiprows=1)
+
+        required_columns = {"Employee ID", "First Name", "Department"}
+
+        if not required_columns.issubset(report.columns):
+            raise HTTPException(
+                status_code=400,
+                detail=f"{file.filename} is not in the expected ZKTeco report format."
+            )
+
+        for _, row in report.iterrows():
+            employee_code = str(row["Employee ID"]).strip()
+
+            if employee_code.lower() == "nan":
+                continue
+
+            if employee_code.endswith(".0"):
+                employee_code = employee_code[:-2]
+
+            if employee_code in seen_codes:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Employee code {employee_code} appears in more than one uploaded report."
+                )
+
+            seen_codes.add(employee_code)
+
+            full_name = str(row["First Name"]).strip()
+            department = str(row["Department"]).strip()
+
+            employees_to_import.append(
+                {
+                    "employee_code": employee_code,
+                    "full_name": full_name,
+                    "department": department,
+                    "shift_name": shift_name
+                }
+            )
+
+    database = SessionLocal()
+
+    shifts = {
+        shift.name: shift
+        for shift in database.query(WorkShiftDatabase).all()
+    }
+
+    created_count = 0
+    existing_count = 0
+
+    for employee_data in employees_to_import:
+        shift = shifts.get(employee_data["shift_name"])
+
+        if not shift:
+            database.close()
+            raise HTTPException(
+                status_code=500,
+                detail=f"Configured shift not found: {employee_data['shift_name']}"
+            )
+
+        employee = database.query(EmployeeDatabase).filter(
+            EmployeeDatabase.employee_code == employee_data["employee_code"]
+        ).first()
+
+        if employee:
+            existing_count += 1
+        else:
+            employee = EmployeeDatabase(
+                employee_code=employee_data["employee_code"],
+                full_name=employee_data["full_name"],
+                email=f"zkteco-{employee_data['employee_code']}@pending.invalid",
+                department=employee_data["department"]
+            )
+
+            database.add(employee)
+            database.flush()
+            created_count += 1
+
+        assignment = database.query(EmployeeShiftAssignmentDatabase).filter(
+            EmployeeShiftAssignmentDatabase.employee_code == employee_data["employee_code"]
+        ).first()
+
+        if assignment:
+            assignment.shift_id = shift.id
+        else:
+            database.add(
+                EmployeeShiftAssignmentDatabase(
+                    employee_code=employee_data["employee_code"],
+                    shift_id=shift.id
+                )
+            )
+
+    database.commit()
+    database.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="employee_import.html",
+        context={
+            "result": {
+                "created_count": created_count,
+                "existing_count": existing_count,
+                "total_count": len(employees_to_import)
+            }
+        }
+    )
